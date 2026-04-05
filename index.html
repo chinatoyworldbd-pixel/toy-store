@@ -3,7 +3,8 @@
 <head>
 <title>China Toy World</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<!-- FIXED SUPABASE -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
 body{margin:0;font-family:Arial;background:#fff5f7;}
@@ -11,8 +12,8 @@ body{margin:0;font-family:Arial;background:#fff5f7;}
 header{
 background:#ff3f6c;
 color:white;
-padding:18px;
-font-size:26px;
+padding:20px;
+font-size:30px;
 text-align:center;
 font-weight:bold;
 position:relative;
@@ -24,11 +25,13 @@ right:20px;
 top:15px;
 background:white;
 color:#ff3f6c;
-padding:6px 12px;
+padding:8px 14px;
 border-radius:20px;
 cursor:pointer;
 font-weight:bold;
+transition:0.3s;
 }
+.admin-btn:hover{box-shadow:0 0 10px white;}
 
 .products{
 display:flex;
@@ -111,7 +114,7 @@ padding:20px;
 <div id="cartBox">
 <h3>🛒 Cart</h3>
 <ul id="cartList"></ul>
-<h4 id="total"></h4>
+<h4 id="totalText"></h4>
 </div>
 
 <center>
@@ -120,11 +123,11 @@ padding:20px;
 <button onclick="placeOrder()">Order Now</button>
 </center>
 
-<!-- ADMIN -->
+<!-- ADMIN PANEL -->
 <div class="admin-panel" id="adminPanel">
 <h2>Admin Panel</h2>
 
-<input id="pname" placeholder="Name">
+<input id="pname" placeholder="Product Name">
 <input id="pprice" placeholder="Price">
 <input id="pimg" placeholder="Image URL">
 
@@ -136,14 +139,15 @@ padding:20px;
 
 <script>
 
+// 🔑 YOUR SUPABASE CONFIG
 const supabase = window.supabase.createClient(
 "https://guhhkfsbvbvhjbtkcuy.supabase.co",
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1aGhrZnNidmJodmhqYnRrY3V5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTgwMzEsImV4cCI6MjA5MDk3NDAzMX0.fIJoWAWAlnjPvU9bc5a1CIlWg5aAt-9rCkLjlT3t1aw"
+"YOUR_ANON_KEY"
 );
 
 let cart=[];
 
-// notify
+// 🔔 NOTIFY
 function notify(msg){
 let n=document.getElementById("notify");
 n.innerText=msg;
@@ -151,9 +155,14 @@ n.style.display="block";
 setTimeout(()=>n.style.display="none",2000);
 }
 
-// load products
+// 📦 LOAD PRODUCTS
 async function load(){
 let {data,error}=await supabase.from("products").select("*");
+
+if(error){
+notify("Database Error ❌");
+return;
+}
 
 let html="";
 data.forEach(p=>{
@@ -169,14 +178,14 @@ products.innerHTML=html;
 }
 load();
 
-// cart add
-function addToCart(p){
+// 🛒 ADD TO CART
+window.addToCart=function(p){
 cart.push(p);
 renderCart();
-notify("Cart Added ✅");
+notify("Added to Cart ✅");
 }
 
-// render cart
+// 🛒 RENDER CART
 function renderCart(){
 let html="";
 let total=0;
@@ -188,18 +197,18 @@ total+=Number(p.price);
 });
 
 cartList.innerHTML=html;
-total.innerText="Total: "+total+"৳";
+document.getElementById("totalText").innerText="Total: "+total+"৳";
 }
 
-// remove
-function removeItem(i){
+// ❌ REMOVE ITEM
+window.removeItem=function(i){
 cart.splice(i,1);
 renderCart();
 notify("Removed ❌");
 }
 
-// order
-async function placeOrder(){
+// 📦 PLACE ORDER
+window.placeOrder=async function(){
 if(!name.value || !phone.value){
 notify("Info Missing ⚠️");
 return;
@@ -216,17 +225,20 @@ cart=[];
 renderCart();
 }
 
-// admin login
-function adminLogin(){
-let p=prompt("Password");
+// 🔐 ADMIN LOGIN
+window.adminLogin=function(){
+let p=prompt("Enter Admin Password");
 if(p==="1234"){
 adminPanel.style.display="block";
 loadOrders();
+notify("Admin Login Success ✅");
+}else{
+notify("Wrong Password ❌");
 }
 }
 
-// add product
-async function addProduct(){
+// ➕ ADD PRODUCT
+window.addProduct=async function(){
 if(!pname.value || !pprice.value || !pimg.value){
 notify("Missing Info ⚠️");
 return;
@@ -238,13 +250,18 @@ price:pprice.value,
 image:pimg.value
 }]);
 
-notify("Product Added ✅");
+notify("Product Added Successfully ✅");
 setTimeout(()=>location.reload(),1000);
 }
 
-// load orders
+// 📋 LOAD ORDERS
 async function loadOrders(){
-let {data}=await supabase.from("ORDERS").select("*");
+let {data,error}=await supabase.from("orders").select("*");
+
+if(error){
+notify("Order Load Error ❌");
+return;
+}
 
 let html="";
 data.forEach(o=>{
