@@ -2,14 +2,20 @@
 <html>
 <head>
   <title>China Toy World</title>
+
   <style>
-    body { font-family: Arial; margin:0; background:#f5f5f5; }
+    body {
+      font-family: Arial;
+      margin:0;
+      background:#f4f6f9;
+    }
 
     header {
       background:#ff4d6d;
       color:white;
       padding:15px;
       text-align:center;
+      font-size:20px;
       position:relative;
     }
 
@@ -19,20 +25,17 @@
       top:15px;
       background:black;
       color:white;
-      padding:5px 10px;
+      padding:6px 12px;
       cursor:pointer;
+      border-radius:5px;
     }
 
     .hero {
       background:url('https://i.imgur.com/7yUvePI.jpg');
       background-size:cover;
-      color:white;
       text-align:center;
-      padding:100px 20px;
-    }
-
-    .hero h1 {
-      font-size:40px;
+      color:white;
+      padding:100px;
     }
 
     .products {
@@ -43,39 +46,60 @@
 
     .card {
       background:white;
-      padding:10px;
       margin:10px;
+      padding:10px;
       width:200px;
-      text-align:center;
       border-radius:10px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.1);
+      text-align:center;
+      transition:0.3s;
+    }
+
+    .card:hover {
+      transform:scale(1.05);
     }
 
     img {
       width:100%;
       height:150px;
       object-fit:cover;
+      border-radius:8px;
     }
 
     button {
-      background:green;
+      background:#28a745;
       color:white;
       border:none;
-      padding:5px 10px;
+      padding:6px 12px;
       cursor:pointer;
+      margin-top:5px;
     }
 
+    input {
+      padding:6px;
+      margin:5px;
+    }
+
+    /* ADMIN PANEL */
     .admin-panel {
       display:none;
-      background:#fff;
+      background:#1e1e2f;
+      color:white;
       padding:20px;
-      margin:20px;
     }
 
-    .order-box {
-      background:white;
-      margin:10px;
-      padding:10px;
+    .admin-panel input {
+      background:#333;
+      color:white;
+      border:none;
     }
+
+    .admin-card {
+      background:#2c2c3e;
+      padding:10px;
+      margin:10px;
+    }
+
   </style>
 </head>
 
@@ -90,10 +114,10 @@
   <h1>WE SELL HAPPINESS</h1>
 </div>
 
-<h2 style="text-align:center;">Products</h2>
+<h2 style="text-align:center;">🛍 Products</h2>
 <div class="products" id="products"></div>
 
-<h2 style="text-align:center;">Order</h2>
+<h2 style="text-align:center;">📦 Order</h2>
 <center>
   <input id="name" placeholder="Name">
   <input id="phone" placeholder="Phone">
@@ -102,23 +126,33 @@
 
 <!-- ADMIN PANEL -->
 <div class="admin-panel" id="adminPanel">
-  <h2>Admin Dashboard</h2>
 
-  <h3>Add Product</h3>
-  <input id="pname" placeholder="Product Name">
+  <h2>⚙ Admin Dashboard</h2>
+
+  <h3>➕ Add Product</h3>
+  <input id="pname" placeholder="Name">
   <input id="pprice" placeholder="Price">
   <input id="pimg" placeholder="Image URL">
   <button onclick="addProduct()">Add</button>
 
-  <h3>Orders</h3>
+  <h3>📦 Product List</h3>
+  <div id="adminProducts"></div>
+
+  <h3>📋 Orders</h3>
   <div id="orders"></div>
+
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } 
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDHcIM6tcVzcj4YMqBiceU-2mkc2tDIRLw",
@@ -136,37 +170,60 @@ const db = getFirestore(app);
 async function loadProducts(){
   const querySnapshot = await getDocs(collection(db,"products"));
   let html="";
-  querySnapshot.forEach(doc=>{
-    let p=doc.data();
+  let adminHTML="";
+
+  querySnapshot.forEach(docSnap=>{
+    let p=docSnap.data();
+    let id=docSnap.id;
+
     html+=`
     <div class="card">
       <img src="${p.img}">
       <h3>${p.name}</h3>
       <p>${p.price}৳</p>
     </div>`;
+
+    adminHTML+=`
+    <div class="admin-card">
+      ${p.name} - ${p.price}৳
+      <br>
+      <input id="price-${id}" placeholder="New Price">
+      <button onclick="updatePrice('${id}')">Update</button>
+    </div>`;
   });
+
   document.getElementById("products").innerHTML=html;
+  document.getElementById("adminProducts").innerHTML=adminHTML;
 }
 loadProducts();
 
 // ADD PRODUCT
 window.addProduct = async function(){
-  let name=document.getElementById("pname").value;
-  let price=document.getElementById("pprice").value;
-  let img=document.getElementById("pimg").value;
+  let name=pname.value;
+  let price=pprice.value;
+  let img=pimg.value;
 
   await addDoc(collection(db,"products"),{name,price,img});
-  alert("Product Added!");
+  alert("Added!");
+  location.reload();
+}
+
+// UPDATE PRICE
+window.updatePrice = async function(id){
+  let newPrice=document.getElementById("price-"+id).value;
+  const ref=doc(db,"products",id);
+  await updateDoc(ref,{price:newPrice});
+  alert("Updated!");
   location.reload();
 }
 
 // ORDER
 window.placeOrder = async function(){
-  let name=document.getElementById("name").value;
-  let phone=document.getElementById("phone").value;
-
-  await addDoc(collection(db,"orders"),{name,phone});
-  alert("Order Placed!");
+  await addDoc(collection(db,"orders"),{
+    name:name.value,
+    phone:phone.value
+  });
+  alert("Order placed!");
 }
 
 // LOAD ORDERS
@@ -175,15 +232,15 @@ async function loadOrders(){
   let html="";
   querySnapshot.forEach(doc=>{
     let o=doc.data();
-    html+=`<div class="order-box">${o.name} - ${o.phone}</div>`;
+    html+=`<div class="admin-card">${o.name} - ${o.phone}</div>`;
   });
   document.getElementById("orders").innerHTML=html;
 }
 
 // ADMIN LOGIN
 window.adminLogin=function(){
-  let pass=prompt("Enter Password");
-  if(pass==="14@66"){
+  let pass=prompt("Enter Admin Password");
+  if(pass==="1234"){
     document.getElementById("adminPanel").style.display="block";
     loadOrders();
   } else {
