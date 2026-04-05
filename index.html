@@ -3,8 +3,8 @@
 <head>
 <title>China Toy World</title>
 
-<!-- FIXED SUPABASE -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<!-- ✅ ONLY ONE SUPABASE SCRIPT -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 body{margin:0;font-family:Arial;background:#fff5f7;}
@@ -12,8 +12,8 @@ body{margin:0;font-family:Arial;background:#fff5f7;}
 header{
 background:#ff3f6c;
 color:white;
-padding:20px;
-font-size:30px;
+padding:18px;
+font-size:28px;
 text-align:center;
 font-weight:bold;
 position:relative;
@@ -25,13 +25,26 @@ right:20px;
 top:15px;
 background:white;
 color:#ff3f6c;
-padding:8px 14px;
+padding:6px 12px;
 border-radius:20px;
 cursor:pointer;
 font-weight:bold;
+}
+
+button{
+background:#ff3f6c;
+color:white;
+border:none;
+padding:7px 12px;
+margin-top:5px;
+cursor:pointer;
+border-radius:6px;
 transition:0.3s;
 }
-.admin-btn:hover{box-shadow:0 0 10px white;}
+
+button:hover{
+box-shadow:0 0 12px #ff3f6c;
+}
 
 .products{
 display:flex;
@@ -54,21 +67,6 @@ width:100%;
 height:150px;
 object-fit:cover;
 border-radius:10px;
-}
-
-button{
-background:#ff3f6c;
-color:white;
-border:none;
-padding:7px 12px;
-margin-top:5px;
-cursor:pointer;
-border-radius:6px;
-transition:0.3s;
-}
-
-button:hover{
-box-shadow:0 0 10px #ff3f6c;
 }
 
 #notify{
@@ -114,7 +112,7 @@ padding:20px;
 <div id="cartBox">
 <h3>🛒 Cart</h3>
 <ul id="cartList"></ul>
-<h4 id="totalText"></h4>
+<h4 id="total"></h4>
 </div>
 
 <center>
@@ -123,11 +121,11 @@ padding:20px;
 <button onclick="placeOrder()">Order Now</button>
 </center>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN -->
 <div class="admin-panel" id="adminPanel">
 <h2>Admin Panel</h2>
 
-<input id="pname" placeholder="Product Name">
+<input id="pname" placeholder="Name">
 <input id="pprice" placeholder="Price">
 <input id="pimg" placeholder="Image URL">
 
@@ -139,15 +137,15 @@ padding:20px;
 
 <script>
 
-// 🔑 YOUR SUPABASE CONFIG
+// ✅ FIXED SUPABASE INIT
 const supabase = window.supabase.createClient(
 "https://guhhkfsbvbvhjbtkcuy.supabase.co",
-"YOUR_ANON_KEY"
+"YOUR_ANON_KEY_HERE"
 );
 
 let cart=[];
 
-// 🔔 NOTIFY
+// notify
 function notify(msg){
 let n=document.getElementById("notify");
 n.innerText=msg;
@@ -155,11 +153,12 @@ n.style.display="block";
 setTimeout(()=>n.style.display="none",2000);
 }
 
-// 📦 LOAD PRODUCTS
+// load products
 async function load(){
 let {data,error}=await supabase.from("products").select("*");
 
 if(error){
+console.log(error);
 notify("Database Error ❌");
 return;
 }
@@ -174,92 +173,102 @@ html+=`
 <button onclick='addToCart(${JSON.stringify(p)})'>Add</button>
 </div>`;
 });
-products.innerHTML=html;
+document.getElementById("products").innerHTML=html;
 }
 load();
 
-// 🛒 ADD TO CART
+// ✅ GLOBAL FUNCTIONS FIX
 window.addToCart=function(p){
 cart.push(p);
 renderCart();
 notify("Added to Cart ✅");
 }
 
-// 🛒 RENDER CART
 function renderCart(){
 let html="";
-let total=0;
+let totalPrice=0;
 
 cart.forEach((p,i)=>{
 html+=`<li>${p.name} - ${p.price}৳ 
 <button onclick="removeItem(${i})">❌</button></li>`;
-total+=Number(p.price);
+totalPrice+=Number(p.price);
 });
 
-cartList.innerHTML=html;
-document.getElementById("totalText").innerText="Total: "+total+"৳";
+document.getElementById("cartList").innerHTML=html;
+document.getElementById("total").innerText="Total: "+totalPrice+"৳";
 }
 
-// ❌ REMOVE ITEM
 window.removeItem=function(i){
 cart.splice(i,1);
 renderCart();
 notify("Removed ❌");
 }
 
-// 📦 PLACE ORDER
+// order
 window.placeOrder=async function(){
-if(!name.value || !phone.value){
+let name=document.getElementById("name").value;
+let phone=document.getElementById("phone").value;
+
+if(!name || !phone){
 notify("Info Missing ⚠️");
 return;
 }
 
-await supabase.from("orders").insert([{
-name:name.value,
-phone:phone.value,
+let {error}=await supabase.from("orders").insert([{
+name,
+phone,
 cart:JSON.stringify(cart)
 }]);
 
+if(error){
+notify("Order Failed ❌");
+}else{
 notify("Order Placed ✅");
 cart=[];
 renderCart();
 }
+}
 
-// 🔐 ADMIN LOGIN
+// admin login
 window.adminLogin=function(){
-let p=prompt("Enter Admin Password");
+let p=prompt("Password");
 if(p==="1234"){
-adminPanel.style.display="block";
+document.getElementById("adminPanel").style.display="block";
 loadOrders();
-notify("Admin Login Success ✅");
 }else{
 notify("Wrong Password ❌");
 }
 }
 
-// ➕ ADD PRODUCT
+// add product
 window.addProduct=async function(){
-if(!pname.value || !pprice.value || !pimg.value){
+let name=document.getElementById("pname").value;
+let price=document.getElementById("pprice").value;
+let image=document.getElementById("pimg").value;
+
+if(!name || !price || !image){
 notify("Missing Info ⚠️");
 return;
 }
 
-await supabase.from("products").insert([{
-name:pname.value,
-price:pprice.value,
-image:pimg.value
+let {error}=await supabase.from("products").insert([{
+name,price,image
 }]);
 
-notify("Product Added Successfully ✅");
+if(error){
+notify("Add Failed ❌");
+}else{
+notify("Product Added ✅");
 setTimeout(()=>location.reload(),1000);
 }
+}
 
-// 📋 LOAD ORDERS
+// load orders
 async function loadOrders(){
 let {data,error}=await supabase.from("orders").select("*");
 
 if(error){
-notify("Order Load Error ❌");
+notify("Order Load Failed ❌");
 return;
 }
 
@@ -268,7 +277,7 @@ data.forEach(o=>{
 html+=`<div>${o.name} - ${o.phone}</div>`;
 });
 
-orders.innerHTML=html;
+document.getElementById("orders").innerHTML=html;
 }
 
 </script>
