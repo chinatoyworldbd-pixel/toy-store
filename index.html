@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>China Toy World </title>
+  <title>China Toy World BD</title>
   <style>
     body { font-family: Arial; text-align:center; background:#f5f5f5; }
     .product { border:1px solid #ddd; padding:10px; margin:10px; display:inline-block; background:white; }
@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<h1>🧸 China Toy World </h1>
+<h1>🧸 China Toy World BD</h1>
 
 <!-- ADMIN PANEL -->
 <div id="admin">
@@ -37,35 +37,10 @@
 <p>After payment, send screenshot via WhatsApp</p>
 
 <script>
-let products = JSON.parse(localStorage.getItem("products")) || [];
 let cart = [];
 
-function renderProducts() {
-  let container = document.getElementById("products");
-  container.innerHTML = "";
-  products.forEach((p, index) => {
-    container.innerHTML += `
-      <div class="product">
-        <h3>${p.name}</h3>
-        <p>Price: ${p.price}</p>
-        <button onclick="addToCart(${index})">Add to Cart</button>
-      </div>
-    `;
-  });
-}
-
-function addProduct() {
-  let name = document.getElementById("name").value;
-  let price = document.getElementById("price").value;
-  if(name && price){
-    products.push({name, price});
-    localStorage.setItem("products", JSON.stringify(products));
-    renderProducts();
-  }
-}
-
-function addToCart(index) {
-  cart.push(products[index]);
+function addToCart(name, price) {
+  cart.push({name, price});
   renderCart();
 }
 
@@ -73,14 +48,63 @@ function renderCart() {
   let list = document.getElementById("cart");
   let total = 0;
   list.innerHTML = "";
+
   cart.forEach(item => {
     list.innerHTML += `<li>${item.name} - ${item.price}</li>`;
     total += Number(item.price);
   });
+
   document.getElementById("total").innerText = "Total: $" + total;
 }
+</script>
 
-renderProducts();
+<!-- 🔥 FIREBASE FULL CODE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDHcIM6tcVzcj4YMqBiceU-2mkc2tDIRLw",
+    authDomain: "china-toy-world.firebaseapp.com",
+    projectId: "china-toy-world",
+    storageBucket: "china-toy-world.firebasestorage.app",
+    messagingSenderId: "203693443354",
+    appId: "1:203693443354:web:e89dc8ba3dca3c81b404a3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Add product
+  window.addProduct = async function () {
+    let name = document.getElementById("name").value;
+    let price = document.getElementById("price").value;
+
+    if (name && price) {
+      await addDoc(collection(db, "products"), {
+        name: name,
+        price: price
+      });
+      alert("Product Added ✅");
+    }
+  };
+
+  // Show products live
+  onSnapshot(collection(db, "products"), (snapshot) => {
+    let html = "";
+    snapshot.forEach(doc => {
+      let p = doc.data();
+      html += `
+        <div class="product">
+          <h3>${p.name}</h3>
+          <p>Price: ${p.price}</p>
+          <button onclick="addToCart('${p.name}', ${p.price})">Add to Cart</button>
+        </div>
+      `;
+    });
+
+    document.getElementById("products").innerHTML = html;
+  });
 </script>
 
 </body>
