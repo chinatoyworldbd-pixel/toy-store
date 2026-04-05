@@ -1,240 +1,171 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>China Toy World BD</title>
+  <title>China Toy World</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: Arial;
+      background: #fff5f7;
+      margin: 0;
+    }
 
-<style>
-body {margin:0;font-family:Arial;background:#fff5f7;}
+    header {
+      background: #ff4d6d;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 30px;
+      font-weight: bold;
+    }
 
-header {
-  background:#ff3f6c;
-  color:white;
-  padding:15px;
-  font-size:22px;
-  text-align:center;
-  position:relative;
-}
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+      gap: 20px;
+      padding: 20px;
+    }
 
-.admin-btn {
-  position:absolute;
-  right:20px;
-  top:15px;
-  background:white;
-  color:#ff3f6c;
-  padding:5px 10px;
-  border-radius:20px;
-  cursor:pointer;
-}
+    .card {
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
 
-.products {
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-}
+    img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
 
-.card {
-  background:white;
-  width:200px;
-  margin:10px;
-  padding:10px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.1);
-  text-align:center;
-}
+    button {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
 
-.card img {
-  width:100%;
-  height:150px;
-  object-fit:cover;
-  border-radius:10px;
-}
+    .cart {
+      padding: 20px;
+    }
 
-button {
-  background:#ff3f6c;
-  color:white;
-  border:none;
-  padding:6px 10px;
-  margin-top:5px;
-  cursor:pointer;
-  border-radius:5px;
-}
+    .admin {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+    }
 
-#notify {
-  position:fixed;
-  top:20px;
-  right:20px;
-  background:#333;
-  color:white;
-  padding:10px;
-  display:none;
-}
-
-#cartBox {
-  background:white;
-  margin:20px;
-  padding:15px;
-  border-radius:10px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-
-.admin-panel {
-  display:none;
-  background:#222;
-  color:white;
-  padding:20px;
-}
-</style>
+    .admin-panel {
+      display: none;
+      background: white;
+      padding: 10px;
+      position: fixed;
+      top: 50px;
+      right: 10px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 
 <body>
 
-<header>
-🧸 China Toy World BD
-<span class="admin-btn" onclick="adminLogin()">Admin</span>
-</header>
+<header>🐻 China Toy World</header>
 
-<div id="notify"></div>
+<div class="admin">
+  <button onclick="toggleAdmin()">Admin</button>
+</div>
 
-<h2 style="text-align:center;">Products</h2>
+<div class="admin-panel" id="adminPanel">
+  <h3>Add Product</h3>
+  <input id="name" placeholder="Name"><br>
+  <input id="price" placeholder="Price"><br>
+  <input id="image" placeholder="Image URL"><br>
+  <button onclick="addProduct()">Add</button>
+</div>
+
 <div class="products" id="products"></div>
 
-<div id="cartBox">
-<h3>🛒 Cart</h3>
-<ul id="cartList"></ul>
-<h4 id="total"></h4>
+<div class="cart">
+  <h2>Cart</h2>
+  <ul id="cart"></ul>
+  <input id="custName" placeholder="Name">
+  <input id="phone" placeholder="Phone">
+  <button onclick="placeOrder()">Order</button>
 </div>
 
-<center>
-<input id="name" placeholder="Name">
-<input id="phone" placeholder="Phone">
-<button onclick="placeOrder()">Order</button>
-</center>
+<script>
+const supabase = window.supabase.createClient(
+  "https://guhhkfsbvbvhjbtkcuy.supabase.co",
+  "YOUR_PUBLIC_KEY"
+);
 
-<!-- ADMIN -->
-<div class="admin-panel" id="adminPanel">
-<h2>Admin Panel</h2>
+let cart = [];
 
-<input id="pname" placeholder="Name">
-<input id="pprice" placeholder="Price">
-<input id="pimg" placeholder="Image URL">
+async function loadProducts() {
+  let { data } = await supabase.from("products").select("*");
+  let div = document.getElementById("products");
+  div.innerHTML = "";
 
-<button id="addBtn">Add Product</button>
-
-<div id="orders"></div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const app = initializeApp({
-  apiKey:"AIzaSyDHcIM6tcVzcj4YMqBiceU-2mkc2tDIRLw",
-  authDomain:"china-toy-world.firebaseapp.com",
-  projectId:"china-toy-world"
-});
-
-const db = getFirestore(app);
-
-let cart=[];
-
-// notify
-function notify(msg){
-  let n=document.getElementById("notify");
-  n.innerText=msg;
-  n.style.display="block";
-  setTimeout(()=>n.style.display="none",2000);
-}
-
-// load products
-async function load(){
-  let data=await getDocs(collection(db,"products"));
-  let html="";
-  data.forEach(doc=>{
-    let p=doc.data();
-    html+=`
-    <div class="card">
-      <img src="${p.img}">
-      <h4>${p.name}</h4>
-      <p>${p.price}৳</p>
-      <button onclick='addToCart(${JSON.stringify(p)})'>Add</button>
-    </div>`;
+  data.forEach(p => {
+    div.innerHTML += `
+      <div class="card">
+        <img src="${p.image}">
+        <h3>${p.name}</h3>
+        <p>৳${p.price}</p>
+        <button onclick='addToCart(${JSON.stringify(p)})'>Add</button>
+      </div>
+    `;
   });
-  products.innerHTML=html;
 }
-load();
 
-// add to cart
-window.addToCart=function(p){
+function addToCart(p) {
   cart.push(p);
   renderCart();
-  notify("Added to Cart");
+  alert("Added to cart");
 }
 
-function renderCart(){
-  let html="";
-  let total=0;
-
-  cart.forEach((p,i)=>{
-    html+=`<li>${p.name} - ${p.price}৳ 
-    <button onclick="removeItem(${i})">❌</button></li>`;
-    total+=Number(p.price);
+function renderCart() {
+  let ul = document.getElementById("cart");
+  ul.innerHTML = "";
+  cart.forEach((c,i)=>{
+    ul.innerHTML += `<li>${c.name} - ${c.price}
+    <button onclick="removeItem(${i})">X</button></li>`;
   });
-
-  cartList.innerHTML=html;
-  totalEl.innerText="Total: "+total+"৳";
 }
 
-window.removeItem=function(i){
+function removeItem(i){
   cart.splice(i,1);
   renderCart();
-  notify("Removed");
 }
 
-// order
-window.placeOrder=async function(){
-  await addDoc(collection(db,"orders"),{
-    name:name.value,
-    phone:phone.value,
-    cart
-  });
-  notify("Order Placed ✅");
-  cart=[];
-  renderCart();
+async function addProduct(){
+  let name = document.getElementById("name").value;
+  let price = document.getElementById("price").value;
+  let image = document.getElementById("image").value;
+
+  await supabase.from("products").insert([{name,price,image}]);
+  alert("Product Added");
+  loadProducts();
 }
 
-// admin login
-window.adminLogin=function(){
-  let p=prompt("Password");
-  if(p==="1234"){
-    adminPanel.style.display="block";
-    loadOrders();
-  }
+async function placeOrder(){
+  let name = document.getElementById("custName").value;
+  let phone = document.getElementById("phone").value;
+
+  await supabase.from("orders").insert([{name,phone,cart: JSON.stringify(cart)}]);
+  alert("Order Placed");
 }
 
-// add product FIXED
-document.getElementById("addBtn").addEventListener("click",async ()=>{
-  addBtn.style.boxShadow="0 0 20px #00ff00";
-
-  await addDoc(collection(db,"products"),{
-    name:pname.value,
-    price:pprice.value,
-    img:pimg.value
-  });
-
-  notify("Product Added ✅");
-  setTimeout(()=>location.reload(),1000);
-});
-
-// load orders
-async function loadOrders(){
-  let data=await getDocs(collection(db,"orders"));
-  let html="";
-  data.forEach(doc=>{
-    let o=doc.data();
-    html+=`<div>${o.name} - ${o.phone}</div>`;
-  });
-  orders.innerHTML=html;
+function toggleAdmin(){
+  let p = document.getElementById("adminPanel");
+  p.style.display = p.style.display==="block"?"none":"block";
 }
+
+loadProducts();
 </script>
 
 </body>
