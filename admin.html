@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+</head>
+<body>
+
+<h2>🔐 Admin Login</h2>
+<input id="pass" placeholder="Enter Password">
+<button onclick="login()">Login</button>
+
+<div id="panel" style="display:none;">
+  <h2>Add Product</h2>
+  <input id="name" placeholder="Name">
+  <input id="price" placeholder="Price">
+  <input id="image" placeholder="Image URL">
+  <button onclick="addProduct()">Add</button>
+</div>
+
+<script>
+function login(){
+  let p = document.getElementById("pass").value;
+  if(p==="1234"){
+    document.getElementById("panel").style.display="block";
+  }else{
+    alert("Wrong password");
+  }
+}
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "china-toy-world.firebaseapp.com",
+  projectId: "china-toy-world"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.addProduct = async ()=>{
+  let name = document.getElementById("name").value;
+  let price = document.getElementById("price").value;
+  let image = document.getElementById("image").value;
+
+  await addDoc(collection(db,"products"),{
+    name, price, image
+  });
+
+  alert("Product Added");
+}
+</script>
+
+</body>
+</html>
