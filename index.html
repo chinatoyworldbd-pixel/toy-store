@@ -1,115 +1,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>China Toy World BD</title>
+<title>China Toy World</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
-body {
-  margin:0;
-  font-family:Arial;
-  background:#fff5f7;
+body{margin:0;font-family:Arial;background:#fff5f7;}
+
+header{
+background:#ff3f6c;
+color:white;
+padding:18px;
+font-size:26px;
+text-align:center;
+font-weight:bold;
+position:relative;
 }
 
-/* HEADER */
-header {
-  background:#ff3f6c;
-  color:white;
-  padding:20px;
-  font-size:30px;
-  text-align:center;
-  font-weight:bold;
-  position:relative;
+.admin-btn{
+position:absolute;
+right:20px;
+top:15px;
+background:white;
+color:#ff3f6c;
+padding:6px 12px;
+border-radius:20px;
+cursor:pointer;
+font-weight:bold;
 }
 
-.admin-btn {
-  position:absolute;
-  right:20px;
-  top:20px;
-  background:white;
-  color:#ff3f6c;
-  padding:6px 12px;
-  border-radius:20px;
-  cursor:pointer;
+.products{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
 }
 
-/* PRODUCTS */
-.products {
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
+.card{
+background:white;
+width:220px;
+margin:12px;
+padding:10px;
+border-radius:15px;
+box-shadow:0 4px 15px rgba(0,0,0,0.1);
+text-align:center;
 }
 
-.card {
-  background:white;
-  width:220px;
-  margin:12px;
-  padding:12px;
-  border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.1);
-  text-align:center;
-  transition:0.3s;
+.card img{
+width:100%;
+height:150px;
+object-fit:cover;
+border-radius:10px;
 }
 
-.card:hover {
-  transform:translateY(-5px);
+button{
+background:#ff3f6c;
+color:white;
+border:none;
+padding:7px 12px;
+margin-top:5px;
+cursor:pointer;
+border-radius:6px;
+transition:0.3s;
 }
 
-.card img {
-  width:100%;
-  height:150px;
-  object-fit:cover;
-  border-radius:10px;
+button:hover{
+box-shadow:0 0 10px #ff3f6c;
 }
 
-/* BUTTON */
-button {
-  background:#ff3f6c;
-  color:white;
-  border:none;
-  padding:8px 12px;
-  margin-top:6px;
-  cursor:pointer;
-  border-radius:6px;
-  transition:0.2s;
+#notify{
+position:fixed;
+top:20px;
+right:20px;
+background:black;
+color:white;
+padding:10px;
+border-radius:6px;
+display:none;
 }
 
-button:active {
-  box-shadow:0 0 15px #ff3f6c;
+#cartBox{
+background:white;
+margin:20px;
+padding:15px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* NOTIFY */
-#notify {
-  position:fixed;
-  top:20px;
-  right:20px;
-  background:#111;
-  color:white;
-  padding:12px;
-  border-radius:8px;
-  display:none;
-}
-
-/* CART */
-#cartBox {
-  background:white;
-  margin:20px;
-  padding:15px;
-  border-radius:10px;
-}
-
-/* ADMIN */
-.admin-panel {
-  display:none;
-  background:#111;
-  color:white;
-  padding:20px;
-}
-
-input {
-  padding:8px;
-  margin:5px;
+.admin-panel{
+display:none;
+background:#111;
+color:white;
+padding:20px;
 }
 </style>
 </head>
@@ -123,7 +105,7 @@ input {
 
 <div id="notify"></div>
 
-<h2 style="text-align:center;">🛍 Products</h2>
+<h2 style="text-align:center;">Products</h2>
 <div class="products" id="products"></div>
 
 <div id="cartBox">
@@ -142,11 +124,11 @@ input {
 <div class="admin-panel" id="adminPanel">
 <h2>Admin Panel</h2>
 
-<input id="pname" placeholder="Product Name">
+<input id="pname" placeholder="Name">
 <input id="pprice" placeholder="Price">
 <input id="pimg" placeholder="Image URL">
 
-<button id="addBtn">Add Product</button>
+<button onclick="addProduct()">Add Product</button>
 
 <h3>Orders</h3>
 <div id="orders"></div>
@@ -154,129 +136,122 @@ input {
 
 <script>
 
-// ✅ SUPABASE CONNECT (YOUR CODE OK)
 const supabase = window.supabase.createClient(
-  "https://guhhkfsbvbvhjbtkcuy.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1aGhrZnNidmJodmhqYnRrY3V5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTgwMzEsImV4cCI6MjA5MDk3NDAzMX0.fIJoWAWAlnjPvU9bc5a1CIlWg5aAt-9rCkLjlT3t1aw"
+"https://guhhkfsbvbvhjbtkcuy.supabase.co",
+"YOUR_ANON_KEY"
 );
 
 let cart=[];
 
-/* NOTIFY */
+// notify
 function notify(msg){
-  let n=document.getElementById("notify");
-  n.innerText=msg;
-  n.style.display="block";
-  setTimeout(()=>n.style.display="none",2000);
+let n=document.getElementById("notify");
+n.innerText=msg;
+n.style.display="block";
+setTimeout(()=>n.style.display="none",2000);
 }
 
-/* LOAD PRODUCTS FROM DB */
+// load products
 async function load(){
-  let {data,error} = await supabase.from("products").select("*");
+let {data,error}=await supabase.from("products").select("*");
 
-  let html="";
-  data.forEach(p=>{
-    html+=`
-    <div class="card">
-      <img src="${p.image}">
-      <h4>${p.name}</h4>
-      <p>${p.price}৳</p>
-      <button onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
-    </div>`;
-  });
-
-  products.innerHTML=html;
+let html="";
+data.forEach(p=>{
+html+=`
+<div class="card">
+<img src="${p.image}">
+<h4>${p.name}</h4>
+<p>${p.price}৳</p>
+<button onclick='addToCart(${JSON.stringify(p)})'>Add</button>
+</div>`;
+});
+products.innerHTML=html;
 }
 load();
 
-/* CART */
+// cart add
 function addToCart(p){
-  cart.push(p);
-  renderCart();
-  notify("🛒 Cart add successful");
+cart.push(p);
+renderCart();
+notify("Cart Added ✅");
 }
 
+// render cart
 function renderCart(){
-  let html="";
-  let total=0;
+let html="";
+let total=0;
 
-  cart.forEach((p,i)=>{
-    html+=`
-    <li>${p.name} - ${p.price}৳ 
-    <button onclick="removeItem(${i})">❌</button></li>`;
-    total+=Number(p.price);
-  });
-
-  cartList.innerHTML=html;
-  total.innerText="Total: "+total+"৳";
-}
-
-function removeItem(i){
-  cart.splice(i,1);
-  renderCart();
-  notify("❌ Removed successful");
-}
-
-/* ORDER */
-async function placeOrder(){
-
-  if(!name.value || !phone.value){
-    notify("⚠️ Info missing");
-    return;
-  }
-
-  await supabase.from("orders").insert([{
-    name:name.value,
-    phone:phone.value,
-    cart: JSON.stringify(cart)
-  }]);
-
-  notify("🎉 Order placed successful");
-
-  cart=[];
-  renderCart();
-}
-
-/* ADMIN */
-function adminLogin(){
-  let p=prompt("Password");
-  if(p==="1234"){
-    adminPanel.style.display="block";
-    loadOrders();
-  }
-}
-
-/* ADD PRODUCT */
-document.getElementById("addBtn").addEventListener("click",async ()=>{
-
-  if(!pname.value || !pprice.value || !pimg.value){
-    notify("⚠️ Info missing");
-    return;
-  }
-
-  addBtn.style.boxShadow="0 0 20px #00ff00";
-
-  await supabase.from("products").insert([{
-    name:pname.value,
-    price:pprice.value,
-    image:pimg.value
-  }]);
-
-  notify("✅ Product add successful");
-
-  load();
+cart.forEach((p,i)=>{
+html+=`<li>${p.name} - ${p.price}৳ 
+<button onclick="removeItem(${i})">❌</button></li>`;
+total+=Number(p.price);
 });
 
-/* LOAD ORDERS */
+cartList.innerHTML=html;
+total.innerText="Total: "+total+"৳";
+}
+
+// remove
+function removeItem(i){
+cart.splice(i,1);
+renderCart();
+notify("Removed ❌");
+}
+
+// order
+async function placeOrder(){
+if(!name.value || !phone.value){
+notify("Info Missing ⚠️");
+return;
+}
+
+await supabase.from("orders").insert([{
+name:name.value,
+phone:phone.value,
+cart:JSON.stringify(cart)
+}]);
+
+notify("Order Placed ✅");
+cart=[];
+renderCart();
+}
+
+// admin login
+function adminLogin(){
+let p=prompt("Password");
+if(p==="1234"){
+adminPanel.style.display="block";
+loadOrders();
+}
+}
+
+// add product
+async function addProduct(){
+if(!pname.value || !pprice.value || !pimg.value){
+notify("Missing Info ⚠️");
+return;
+}
+
+await supabase.from("products").insert([{
+name:pname.value,
+price:pprice.value,
+image:pimg.value
+}]);
+
+notify("Product Added ✅");
+setTimeout(()=>location.reload(),1000);
+}
+
+// load orders
 async function loadOrders(){
-  let {data} = await supabase.from("orders").select("*");
+let {data}=await supabase.from("ORDERS").select("*");
 
-  let html="";
-  data.forEach(o=>{
-    html+=`<div>👤 ${o.name} - 📞 ${o.phone}</div>`;
-  });
+let html="";
+data.forEach(o=>{
+html+=`<div>${o.name} - ${o.phone}</div>`;
+});
 
-  orders.innerHTML=html;
+orders.innerHTML=html;
 }
 
 </script>
