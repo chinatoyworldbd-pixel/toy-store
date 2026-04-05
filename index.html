@@ -1,237 +1,219 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>China Toy World</title>
+<title>China Toy World BD</title>
 
-  <style>
-    body { font-family: Arial; margin:0; background:#f4f6f9; }
+<style>
+body {margin:0;font-family:Arial;background:#fff5f7;}
 
-    header {
-      background:#ff4d6d;
-      color:white;
-      padding:15px;
-      text-align:center;
-      font-size:22px;
-      position:relative;
-    }
+header {
+  background:#ff3f6c;
+  color:white;
+  padding:15px;
+  font-size:22px;
+  text-align:center;
+  position:relative;
+}
 
-    .admin-btn {
-      position:absolute;
-      right:20px;
-      top:15px;
-      background:black;
-      color:white;
-      padding:6px 12px;
-      cursor:pointer;
-      border-radius:5px;
-    }
+.admin-btn {
+  position:absolute;
+  right:20px;
+  top:15px;
+  background:white;
+  color:#ff3f6c;
+  padding:5px 10px;
+  border-radius:20px;
+  cursor:pointer;
+}
 
-    .hero {
-      background:url('https://i.imgur.com/7yUvePI.jpg');
-      background-size:cover;
-      color:white;
-      text-align:center;
-      padding:100px;
-    }
+.products {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+}
 
-    .products {
-      display:flex;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
+.card {
+  background:white;
+  width:200px;
+  margin:10px;
+  padding:10px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+  text-align:center;
+}
 
-    .card {
-      background:white;
-      margin:10px;
-      padding:10px;
-      width:200px;
-      border-radius:10px;
-      box-shadow:0 5px 15px rgba(0,0,0,0.1);
-      text-align:center;
-      transition:0.3s;
-    }
+.card img {
+  width:100%;
+  height:150px;
+  object-fit:cover;
+  border-radius:10px;
+}
 
-    .card:hover {
-      transform:scale(1.05);
-    }
+button {
+  background:#ff3f6c;
+  color:white;
+  border:none;
+  padding:6px 10px;
+  margin-top:5px;
+  cursor:pointer;
+  border-radius:5px;
+}
 
-    img {
-      width:100%;
-      height:150px;
-      object-fit:cover;
-      border-radius:8px;
-    }
+#notify {
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:#333;
+  color:white;
+  padding:10px;
+  display:none;
+}
 
-    button {
-      background:#28a745;
-      color:white;
-      border:none;
-      padding:6px 12px;
-      cursor:pointer;
-      margin-top:5px;
-    }
+#cartBox {
+  background:white;
+  margin:20px;
+  padding:15px;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
 
-    button:active {
-      box-shadow:0 0 15px lime;
-    }
-
-    input {
-      padding:6px;
-      margin:5px;
-    }
-
-    /* NOTIFICATION */
-    #notify {
-      position:fixed;
-      top:20px;
-      right:20px;
-      background:black;
-      color:white;
-      padding:10px;
-      display:none;
-      border-radius:5px;
-    }
-
-    /* CART */
-    #cartBox {
-      background:white;
-      margin:20px;
-      padding:10px;
-      border-radius:10px;
-    }
-
-    /* ADMIN PANEL */
-    .admin-panel {
-      display:none;
-      background:#1e1e2f;
-      color:white;
-      padding:20px;
-    }
-
-    .admin-card {
-      background:#2c2c3e;
-      padding:10px;
-      margin:10px;
-    }
-
-  </style>
+.admin-panel {
+  display:none;
+  background:#222;
+  color:white;
+  padding:20px;
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  🧸 China Toy World
-  <span class="admin-btn" onclick="adminLogin()">Admin</span>
+🧸 China Toy World BD
+<span class="admin-btn" onclick="adminLogin()">Admin</span>
 </header>
-
-<div class="hero">
-  <h1>WE SELL HAPPINESS</h1>
-</div>
 
 <div id="notify"></div>
 
-<h2 style="text-align:center;">🛍 Products</h2>
+<h2 style="text-align:center;">Products</h2>
 <div class="products" id="products"></div>
 
-<!-- CART -->
 <div id="cartBox">
-  <h3>🛒 Cart</h3>
-  <ul id="cartList"></ul>
-  <h4 id="total"></h4>
+<h3>🛒 Cart</h3>
+<ul id="cartList"></ul>
+<h4 id="total"></h4>
 </div>
 
-<!-- ORDER -->
 <center>
-  <input id="name" placeholder="Name">
-  <input id="phone" placeholder="Phone">
-  <button onclick="placeOrder()">Order Now</button>
+<input id="name" placeholder="Name">
+<input id="phone" placeholder="Phone">
+<button onclick="placeOrder()">Order</button>
 </center>
 
 <!-- ADMIN -->
 <div class="admin-panel" id="adminPanel">
+<h2>Admin Panel</h2>
 
-  <h2>⚙ Admin Dashboard</h2>
+<input id="pname" placeholder="Name">
+<input id="pprice" placeholder="Price">
+<input id="pimg" placeholder="Image URL">
 
-  <input id="pname" placeholder="Name">
-  <input id="pprice" placeholder="Price">
-  <input id="pimg" placeholder="Image URL">
-  <button onclick="addProduct()" id="addBtn">Add Product</button>
+<button id="addBtn">Add Product</button>
 
-  <h3>Orders</h3>
-  <div id="orders"></div>
-
+<div id="orders"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDHcIM6tcVzcj4YMqBiceU-2mkc2tDIRLw",
-  authDomain: "china-toy-world.firebaseapp.com",
-  projectId: "china-toy-world",
-};
+const app = initializeApp({
+  apiKey:"AIzaSyDHcIM6tcVzcj4YMqBiceU-2mkc2tDIRLw",
+  authDomain:"china-toy-world.firebaseapp.com",
+  projectId:"china-toy-world"
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// NOTIFY FUNCTION
-function showMsg(msg){
-  let box=document.getElementById("notify");
-  box.innerText=msg;
-  box.style.display="block";
-  setTimeout(()=>box.style.display="none",2000);
-}
-
-// CART
 let cart=[];
 
-function renderCart(){
-  let list="";
-  let total=0;
-
-  cart.forEach(item=>{
-    list+=`<li>${item.name} - ${item.price}৳</li>`;
-    total+=Number(item.price);
-  });
-
-  document.getElementById("cartList").innerHTML=list;
-  document.getElementById("total").innerText="Total: "+total+"৳";
+// notify
+function notify(msg){
+  let n=document.getElementById("notify");
+  n.innerText=msg;
+  n.style.display="block";
+  setTimeout(()=>n.style.display="none",2000);
 }
 
-// LOAD PRODUCTS
-async function loadProducts(){
-  const data = await getDocs(collection(db,"products"));
+// load products
+async function load(){
+  let data=await getDocs(collection(db,"products"));
   let html="";
-
   data.forEach(doc=>{
     let p=doc.data();
     html+=`
     <div class="card">
       <img src="${p.img}">
-      <h3>${p.name}</h3>
+      <h4>${p.name}</h4>
       <p>${p.price}৳</p>
-      <button onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
+      <button onclick='addToCart(${JSON.stringify(p)})'>Add</button>
     </div>`;
   });
-
-  document.getElementById("products").innerHTML=html;
+  products.innerHTML=html;
 }
-loadProducts();
+load();
 
-// ADD TO CART
+// add to cart
 window.addToCart=function(p){
   cart.push(p);
   renderCart();
-  showMsg("🛒 Added to Cart");
+  notify("Added to Cart");
 }
 
-// ADD PRODUCT
-window.addProduct=async function(){
-  let btn=document.getElementById("addBtn");
-  btn.style.boxShadow="0 0 20px lime";
+function renderCart(){
+  let html="";
+  let total=0;
+
+  cart.forEach((p,i)=>{
+    html+=`<li>${p.name} - ${p.price}৳ 
+    <button onclick="removeItem(${i})">❌</button></li>`;
+    total+=Number(p.price);
+  });
+
+  cartList.innerHTML=html;
+  totalEl.innerText="Total: "+total+"৳";
+}
+
+window.removeItem=function(i){
+  cart.splice(i,1);
+  renderCart();
+  notify("Removed");
+}
+
+// order
+window.placeOrder=async function(){
+  await addDoc(collection(db,"orders"),{
+    name:name.value,
+    phone:phone.value,
+    cart
+  });
+  notify("Order Placed ✅");
+  cart=[];
+  renderCart();
+}
+
+// admin login
+window.adminLogin=function(){
+  let p=prompt("Password");
+  if(p==="1234"){
+    adminPanel.style.display="block";
+    loadOrders();
+  }
+}
+
+// add product FIXED
+document.getElementById("addBtn").addEventListener("click",async ()=>{
+  addBtn.style.boxShadow="0 0 20px #00ff00";
 
   await addDoc(collection(db,"products"),{
     name:pname.value,
@@ -239,41 +221,19 @@ window.addProduct=async function(){
     img:pimg.value
   });
 
-  showMsg("✅ Added Successfully");
+  notify("Product Added ✅");
   setTimeout(()=>location.reload(),1000);
-}
+});
 
-// ORDER
-window.placeOrder=async function(){
-  await addDoc(collection(db,"orders"),{
-    name:name.value,
-    phone:phone.value,
-    cart:cart
-  });
-
-  showMsg("🎉 Order Placed Successfully");
-  cart=[];
-  renderCart();
-}
-
-// LOAD ORDERS
+// load orders
 async function loadOrders(){
-  const data = await getDocs(collection(db,"orders"));
+  let data=await getDocs(collection(db,"orders"));
   let html="";
   data.forEach(doc=>{
     let o=doc.data();
-    html+=`<div class="admin-card">${o.name} - ${o.phone}</div>`;
+    html+=`<div>${o.name} - ${o.phone}</div>`;
   });
-  document.getElementById("orders").innerHTML=html;
-}
-
-// ADMIN LOGIN
-window.adminLogin=function(){
-  let pass=prompt("Password?");
-  if(pass==="1234"){
-    adminPanel.style.display="block";
-    loadOrders();
-  }
+  orders.innerHTML=html;
 }
 </script>
 
